@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TreeCare Pro - Smart Tree Analysis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2d5016 0%, #1a7d2a 50%, #0d4a1a 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #1a7d2a;
+            margin-bottom: 10px;
+            text-align: center;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+
+        .option-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .option-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 25px;
+            border: 2px solid #ddd;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f9f9f9;
+        }
+
+        .option-button:hover {
+            border-color: #1a7d2a;
+            background: #f0fdf4;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(26, 125, 42, 0.2);
+        }
+
+        .option-button input {
+            display: none;
+        }
+
+        .option-icon {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .option-text {
+            color: #333;
+            font-weight: 600;
+            text-align: center;
+            font-size: 0.95em;
+        }
+
+        .option-subtext {
+            color: #999;
+            font-size: 0.8em;
+            margin-top: 5px;
+        }
+
+        .upload-section {
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        .upload-section.active {
+            display: block;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .file-input-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            border: 3px dashed #2d5016;
+            border-radius: 15px;
+            background: #f0fdf4;
+            transition: all 0.3s ease;
+        }
+
+        .file-input-label:hover {
+            background: #e6f9ed;
+            border-color: #1a7d2a;
+        }
+
+        .file-input-label.dragover {
+            background: #d9f4e0;
+            border-color: #1a7d2a;
+            transform: scale(1.02);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .preview-section {
+            margin: 30px 0;
+            text-align: center;
+            display: none;
+        }
+
+        .preview-section.show {
+            display: block;
+        }
+
+        .image-preview {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        #cameraPreview {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .camera-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .result-section {
+            margin-top: 30px;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            display: none;
+        }
+
+        .result-section.show {
+            display: block;
+        }
+
+        .result-section.needs-trimming {
+            background: #fff3cd;
+            border: 2px solid #ff9800;
+        }
+
+        .result-section.no-trimming {
+            background: #d4edda;
+            border: 2px solid #28a745;
+        }
+
+        .result-section.error {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+        }
+
+        .result-status {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .result-section.needs-trimming .result-status {
+            color: #ff9800;
+        }
+
+        .result-section.no-trimming .result-status {
+            color: #28a745;
+        }
+
+        .result-section.error .result-status {
+            color: #dc3545;
+        }
+
+        .confidence-score {
+            font-size: 1.1em;
+            color: #555;
+            margin-top: 10px;
+        }
+
+        .confidence-bar {
+            width: 100%;
+            height: 8px;
+            background: #ddd;
+            border-radius: 4px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: #2d5016;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .result-section.needs-trimming .confidence-fill {
+            background: #ff9800;
+        }
+
+        .result-section.no-trimming .confidence-fill {
+            background: #28a745;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #1a7d2a;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #1a7d2a;
+            font-weight: bold;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            margin-top: 20px;
+            background: linear-gradient(135deg, #2d5016 0%, #1a7d2a 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(45, 80, 22, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .reset-btn {
+            background: #999;
+            margin-top: 10px;
+        }
+
+        .reset-btn:hover {
+            background: #777;
+            box-shadow: 0 10px 20px rgba(100, 100, 100, 0.3);
+        }
+
+        .error-message {
+            color: #dc3545;
+            padding: 15px;
+            background: #f8d7da;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .info-box {
+            background: #e8f5e9;
+            border-left: 4px solid #1a7d2a;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            color: #2d5016;
+        }
+
+        .back-button {
+            background: #999;
+            width: auto;
+            padding: 10px 20px;
+            margin-top: 10px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
+
+        .back-button:hover {
+            background: #777;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .option-group {
+                grid-template-columns: 1fr;
+            }
+
+            .file-input-label {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌳 TreeCare Pro</h1>
+        <p class="subtitle">Smart Tree Health Analysis</p>
+
+        <div class="info-box" id="mainInfo">
+            📋 Choose how to upload your tree image
+        </div>
+
+        <!-- Main Option Selection -->
+        <div class="option-group" id="optionGroup">
+            <label class="option-button" for="fileInput">
+                <div class="option-icon">📁</div>
+                <div class="option-text">Upload Photo</div>
+                <div class="option-subtext">From Gallery</div>
+                <input type="file" id="fileInput" accept="image/*">
+            </label>
+
+            <label class="option-button" for="cameraInput">
+                <div class="option-icon">📷</div>
+                <div class="option-text">Take Photo</div>
+                <div class="option-subtext">Use Camera</div>
+                <input type="file" id="cameraInput" accept="image/*" capture="environment">
+            </label>
+        </div>
+
+        <!-- Back Button (Hidden initially) -->
+        <button class="back-button" id="backButton" onclick="goBackToOptions()" style="display: none;">
+            ← Back
+        </button>
+
+        <!-- Preview Section -->
+        <div class="preview-section" id="previewSection">
+            <img id="imagePreview" class="image-preview" alt="Preview">
+        </div>
+
+        <!-- Loading -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <div class="loading-text">Analyzing tree health...</div>
+        </div>
+
+        <!-- Error Message -->
+        <div class="error-message" id="errorMessage"></div>
+
+        <!-- Result Section -->
+        <div class="result-section" id="resultSection">
+            <div class="result-status" id="resultStatus"></div>
+            <div class="confidence-score">
+                Confidence: <span id="confidenceText">0%</span>
+                <div class="confidence-bar">
+                    <div class="confidence-fill" id="confidenceFill"></div>
+                </div>
+            </div>
+            <button class="reset-btn" onclick="resetApp()">Analyze Another Image</button>
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const cameraInput = document.getElementById('cameraInput');
+        const previewSection = document.getElementById('previewSection');
+        const imagePreview = document.getElementById('imagePreview');
+        const resultSection = document.getElementById('resultSection');
+        const loading = document.getElementById('loading');
+        const errorMessage = document.getElementById('errorMessage');
+        const optionGroup = document.getElementById('optionGroup');
+        const backButton = document.getElementById('backButton');
+        const mainInfo = document.getElementById('mainInfo');
+
+        let selectedFile = null;
+
+        // File input change
+        fileInput.addEventListener('change', handleFileSelect);
+        cameraInput.addEventListener('change', handleFileSelect);
+
+        function handleFileSelect(e) {
+            selectedFile = e.target.files[0];
+            
+            if (!selectedFile) return;
+
+            // Validate file type
+            if (!selectedFile.type.startsWith('image/')) {
+                showError('Please select a valid image file');
+                return;
+            }
+
+            // Validate file size (16MB)
+            if (selectedFile.size > 16 * 1024 * 1024) {
+                showError('File size must be less than 16MB');
+                return;
+            }
+
+            // Show preview
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                imagePreview.src = event.target.result;
+                previewSection.classList.add('show');
+                resultSection.classList.remove('show');
+                optionGroup.style.display = 'none';
+                backButton.style.display = 'block';
+                mainInfo.innerHTML = '📸 Processing your image...';
+                analyzeImage();
+            };
+            reader.readAsDataURL(selectedFile);
+        }
+
+        async function analyzeImage() {
+            if (!selectedFile) return;
+
+            loading.classList.add('show');
+            errorMessage.classList.remove('show');
+            resultSection.classList.remove('show');
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                loading.classList.remove('show');
+
+                if (response.ok && !data.error) {
+                    displayResult(data);
+                } else {
+                    showError(data.error || 'Failed to analyze image');
+                }
+            } catch (error) {
+                loading.classList.remove('show');
+                showError('Error connecting to server: ' + error.message);
+            }
+        }
+
+        function displayResult(data) {
+            const resultStatus = document.getElementById('resultStatus');
+            const confidenceText = document.getElementById('confidenceText');
+            const confidenceFill = document.getElementById('confidenceFill');
+
+            resultStatus.textContent = data.status;
+            const confidence = (data.confidence * 100).toFixed(1);
+            confidenceText.textContent = confidence + '%';
+            confidenceFill.style.width = confidence + '%';
+
+            resultSection.classList.remove('needs-trimming', 'no-trimming', 'error');
+            
+            if (data.needs_trimming) {
+                resultSection.classList.add('needs-trimming', 'show');
+            } else {
+                resultSection.classList.add('no-trimming', 'show');
+            }
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.add('show');
+            resultSection.classList.remove('show');
+            loading.classList.remove('show');
+        }
+
+        function goBackToOptions() {
+            resetApp();
+        }
+
+        function resetApp() {
+            selectedFile = null;
+            fileInput.value = '';
+            cameraInput.value = '';
+            previewSection.classList.remove('show');
+            resultSection.classList.remove('show');
+            errorMessage.classList.remove('show');
+            loading.classList.remove('show');
+            optionGroup.style.display = 'grid';
+            backButton.style.display = 'none';
+            mainInfo.innerHTML = '📋 Choose how to upload your tree image';
+        }
+    </script>
+</body>
+</html>
