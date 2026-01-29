@@ -149,6 +149,8 @@ def health_check():
     }), 200
 
 
+import os  # Ensure this is imported at the top of your file
+
 if __name__ == '__main__':
     print(f"\n{'='*50}")
     print("🌳 Tree Trimming Classifier Web App")
@@ -157,7 +159,10 @@ if __name__ == '__main__':
     print(f"Model loaded: {model is not None}")
     print(f"Classes: {CLASSES}")
     print(f"{'='*50}")
-    print("\nStarting Flask server...")
-    print("Open browser at: http://localhost:5000\n")
     
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # 1. Get the PORT from Render (default to 5000 only if local)
+    port = int(os.environ.get("PORT", 5000))
+    
+    print("\nStarting Flask server...")
+    # 2. debug=False for production (True causes memory leaks/security risks)
+    app.run(host='0.0.0.0', port=port, debug=False)
