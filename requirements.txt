@@ -1,6 +1,6 @@
-Flask==2.3.2
-Flask-CORS==4.0.0
-Pillow==9.5.0
-torch==2.0.1
-torchvision==0.15.2
-Werkzeug==2.3.0
+--extra-index-url https://download.pytorch.org/whl/cpu
+Flask
+Flask-Cors
+gunicorn
+Pillow
+torch
